@@ -1,0 +1,236 @@
+<tool id="vcfsamplecompare"
+      name="vcfsamplecompare"
+      version="0.1.0">
+
+    <description>sort/filter variants that differ between sample groups</description>
+
+    <requirements>
+        <requirement type="package" version="v2.006">vcfsamplecompare</requirement>
+    </requirements>
+
+    <version_command>vcfSampleCompare.pl --version</version_command>
+
+    <command detect_errors="aggressive">
+        <![CDATA[
+            vcfSampleCompare.pl
+              '$infile'
+
+              #for $comp in $rep_comparisons:
+                  -s '$comp.groupone'
+                  -d '$comp.minone'
+                  -s '$comp.grouptwo'
+                  -d '$comp.mintwo'
+              #end for
+
+              $genotypemode
+              $filtermode
+              $growmode
+              $header
+              -u '.vsc'
+              -o '.vsc.vcf' &&
+            mv '${infile}.vsc.vcf' '$vcfoutfile' &&
+            mv '${infile}.vsc' '$rvcfoutfile'            
+        ]]>
+    </command>
+
+    <inputs>
+        <param format="vcf"
+               name="infile"
+               label="VCF file"
+               argument="-i"
+               type="data"
+
+               help="A VCF file that has more than 1 sample column."/>
+
+        <repeat name="rep_comparisons" title="Sample Comparison" min="0">
+            <param name="groupone"
+                   type="text"
+                   label="Sample Group 1"
+                   help="Space delimited list of sample names (exactly as they appear in the column headers of the VCF file), e.g. 'wt1 wt2 wt3'."/>
+            <param name="minone"
+                   type="integer"
+                   min="1"
+                   value="1"
+                   label="Minimum size of Sample Group 1"
+                   help="The minimum size of sample group 1 must be an integer between 1 and the number of samples in sample group 1.  The minimum of 1 of the 2 sample groups must represent a majority of that group (to produce meaningful results).  Use-case: If you have 3 wild type replicate samples in group 1 and you want to find at least 2 of 10 mutant samples from group 2 that differ from all of the wildtype samples, you would specify `-d 3` for group 1 and `-d 2` for group 2"/>
+            <param name="grouptwo"
+                   type="text"
+                   label="Sample Group 2"
+                   help="Space delimited list of sample names (exactly as they appear in the column headers of the VCF file), e.g. 'mutant1 mutant2 mutant3'."/>
+            <param name="mintwo"
+                   type="integer"
+                   min="1"
+                   value="1"
+                   label="Minimum size of Sample Group 2"
+                   help="The minimum size of sample group 2 must be an integer between 1 and the number of samples in sample group 2.  The minimum of 1 of the 2 sample groups must represent a majority of that group (to produce meaningful results).  Use-case: If you have 3 wild type replicate samples in group 1 and you want to find at least 2 of 10 mutant samples from group 2 that differ from all of the wildtype samples, you would specify `-d 3` for group 1 and `-d 2` for group 2"/>
+        </repeat>
+
+        <param name="obsrat"
+               label="Allelic frequency difference gap"
+               argument="-a"
+               type="float"
+               value="0.6"
+
+               help="A decimal value between 0.0 and 1.0 (inclusive) indicating the minimum difference in the observation ratio averages of a particular variant state (e.g. 'AO/DP') in the sample groups being compared.  Not used in genotype mode." />
+
+        <param name="genotypemode"
+               label="Comparison mode"
+               argument="--genotype|--nogenotype"
+               type="select"
+
+               help="The basis for the degree of difference between the 2 sample groups can be either the genotype calls or allelic frequency (i.e. observation ratios (AO/DP)).">
+            <option value="--genotype" selected="true">Genotype calls</option>
+            <option value="--nogenotype">Allelic Frequencies</option>
+        </param>
+
+        <param name="filtermode"
+               label="Comparison mode"
+               argument="--filter|--nofilter"
+               type="select"
+
+               help="Filtering will omit rows based on the comparison mode.  If the comparison mode is based on genotype calls, the sample groups must not share any genotype calls in common.  If the comparison mode is allelic frequencies, the difference between the average observation ratios in the sample groups must be greater than (or equal to) the allelic frequency difference gap (-a).">
+            <option value="--filter" selected="true">Filter</option>
+            <option value="--nofilter">Do not filter</option>
+        </param>
+
+        <param name="growmode"
+               label="Grow mode"
+               argument="--grow|--nogrow"
+               type="select"
+
+               help="Sample groups will initially be greedily created using their minimum size (-d).  If the minimum sample group size is less than the number of samples available for a group, samples will be added when in grow mode (in a way consistent with the comparison mode).  If the comparison mode is based on genotype calls, as long as the sample groups do not share any genotype calls in common, samples will be greedily added to each group.  If the comparison mode is allelic frequencies, as long as the difference between the average observation ratios in the sample groups is greater than (or equal to) the allelic frequency difference gap (-a), samples will be greedily added to each group.  Note, grow mode may lower the sort order of a variant in allelic frequency mode.">
+            <option value="--grow" selected="true">Grow sample groups from the minimum size (-d)</option>
+            <option value="--nogrow">Do not grow sample groups</option>
+        </param>
+
+        <param name="header"
+               label="Header"
+               argument="--header|--noheader"
+               type="hidden"
+               value="--noheader"/>
+    </inputs>
+
+    <outputs>
+        <data format="vcf" name="vcfoutfile" />
+        <data format="tabular" name="rvcfoutfile" />
+    </outputs>
+
+    <tests>
+        <test>
+            <param name="infile" value="fbse1.vcf"/>
+            <repeat name="rep_comparisons">
+                <param name="groupone" value="gDNA-PA14"/>
+                <param name="minone" value="1"/>
+                <param name="grouptwo" value="205w3 205w2 205w1"/>
+                <param name="mintwo" value="1"/>
+            </repeat>
+            <param name="obsrat" value="0.6"/>
+            <param name="genotypemode" value="--nogenotype"/>
+            <param name="filtermode" value="--filter"/>
+            <param name="growmode" value="--grow"/>
+            <param name="header" value="--noheader"/>
+            <output name="vcfoutfile" file="test7.in1.s1.s3.d1.d1.af.a6.nh.fy.gy.vcf"/>
+            <output name="rvcfoutfile" file="test7.in1.s1.s3.d1.d1.af.a6.nh.fy.gy.rvcf"/>
+        </test>
+        <test>
+            <param name="infile" value="fbse1.vcf"/>
+            <repeat name="rep_comparisons">
+                <param name="groupone" value="gDNA-PA14"/>
+                <param name="minone" value="1"/>
+                <param name="grouptwo" value="205w3 205w2 205w1"/>
+                <param name="mintwo" value="1"/>
+            </repeat>
+            <param name="obsrat" value="0.6"/>
+            <param name="genotypemode" value="--genotype"/>
+            <param name="filtermode" value="--filter"/>
+            <param name="growmode" value="--grow"/>
+            <param name="header" value="--noheader"/>
+            <output name="vcfoutfile" file="test8.in1.s1.s3.d1.d1.gt.nh.fy.gy.vcf"/>
+            <output name="rvcfoutfile" file="test8.in1.s1.s3.d1.d1.gt.nh.fy.gy.rvcf"/>
+        </test>
+        <test>
+            <param name="infile" value="lest1.vcf"/>
+            <param name="obsrat" value="0.6"/>
+            <param name="genotypemode" value="--genotype"/>
+            <param name="filtermode" value="--filter"/>
+            <param name="growmode" value="--grow"/>
+            <param name="header" value="--noheader"/>
+            <output name="vcfoutfile" file="test9.in2.s0.d0.gt.hy.fy.gy.vcf"/>
+            <output name="rvcfoutfile" file="test9.in2.s0.d0.gt.hy.fy.gy.rvcf"/>
+        </test>
+        <test>
+            <param name="infile" value="lest2.vcf"/>
+            <param name="obsrat" value="0.6"/>
+            <param name="genotypemode" value="--nogenotype"/>
+            <param name="filtermode" value="--filter"/>
+            <param name="growmode" value="--grow"/>
+            <param name="header" value="--noheader"/>
+            <output name="vcfoutfile" file="test10.in3.s0.d0.af.a6.hy.fy.gy.vcf"/>
+            <output name="rvcfoutfile" file="test10.in3.s0.d0.af.a6.hy.fy.gy.rvcf"/>
+        </test>
+    </tests>
+
+    <help>
+        <![CDATA[
+
+This script sorts and (optionally) filters the rows/variants of a VCF file (containing data for 2 or more samples) based on the differences in the variant data between samples or sample groups.  Degree of "difference" is determined by either the ratio of group-specific genotype calls over group size or the difference in average allelic frequency (with a gap size threshold).  The the pair of samples or sample groups used to represent the difference for a variant row is the one leading to the greatest difference in consistent genotype or average allelic frequencies (i.e. observation ratios, e.g. AO/DP) of the same variant state.
+
+This script works with VCF files generated by freeBayes (for SNP and small nucleotide variants) or svTyper (for structural variants).  It will work with any other VCF data that includes GT or AO, RO, and DP tags in the FORMAT string.
+
+Each row in a VCF file will be assumed to represent a variant (or variant position).  In the context of this script, there are two ways to look at differences among the samples: genotype calls and the ratio of observations of a particular variant out of the total observatons.  We'll refer to this as either "allelic frequency" or "observation ratios" throughout the documentation.
+
+DEFAULT SORTING BEHAVIOR
+
+VCF rows/variants are sorted by the (maximum) degree of difference that exists between the pairs of sample groups you define.  If multiple pairs are defined, the maximum difference computed among those pairs is used in the sort.  How the degree of difference is calculated depends on whether the --genotype or --nogenotype flag is supplied.
+
+If --genotype is supplied, sorting will be based on the degree of difference in genotype calls between the 2 sample groups.  Put simply, variants where all the genotype calls differ between sample group 1 and sample group 2 will be at the top of the results.  If the genotype calls within a group are not consistent, the rank of the row falls and it will appear lower in the results.  If all of the genotype calls between 2 sample groups are the same, the row will be at the bottom of the results.  If samples do not have genotype calls, the rank falls even lower.  The very bottom of the results will contain variant which have no genotype calls among any samples in the 2 groups.
+
+If --nogenotype is supplied, sorting will be based on the degree of difference in allelic frequencies between the 2 samples groups.  The degree of difference between allelic frequencies will be the maximum difference in observation ratios among the samples, e.g. an 'A' in sample 1 is seen in 1 out of 10 reads that map over the variant position whereas an 'A' is seen in sample 2 in 10 out of 10 reads.  The difference in those observation ratios is 9/10 or 0.9.  The variant state (among all the observations in the 2 sample groups) with the largest difference in observation ratios between the samples in the 2 sample groups is selected to represent the row.  The difference in average ratios of each group is what is used in the sort.
+
+SETTING A MINIMUM GROUP SIZE
+
+Supplying a --min-group-size affects sorting and allows you to find which samples among 2 sample groups differ (by bringing them to the top of the sorted results).  By default, all group members are used to compute maximum difference between 2 sample groups as described above.
+
+When --min-group-size is supplied with --nogentotype, the maximum difference between the sample groups' average observation ratios is computed twice, between N members of sample group 1 and M members of sample group 2.  When comparing sample groups, the maximum difference is determined by taking the greater difference of 2 comparisons: 1. the top N observation ratios of sample group 1 versus the bottom M (inverse) observation ratios of sample group 2.  2. the bottom N observation ratios of sample group 1 versus top M observation ratios of sample group 2.  In order to avoid meaningless results, either N or M must represent a majority of their respective sample groups.  It is recommended to always set -d to the group size for 1 of the 2 groups.  --min-group-size should only be used when the groups being compared are not 2 sets of replicates.
+
+When --min-group-size is supplied with --gentotype, the maximum difference between the sample groups' is computed in the same manner as described above for --genotype, except calls within a sample group are allowed to differ as long as there exists a subgroup of at least size --min-group-size with a consistent genotype call.
+
+DYNAMIC CREATION OF SAMPLE GROUPS
+
+When pairs of sample groups are not supplied, sample groups are greedily determined on each row independently.  Up to 2 --min-group-size's can be supplied, but must not sum to more than the number of samples.  The default minimum group sizes are both 1.  Sorting is performed in the same manner, except (in the case of --nogenotype) the top N and bottom M samples compared are selected from a single list.  In the case of --genotype, the samples are ordered by genotype call abundance and assigned to the groups from either end (omitting those with no-calls).
+
+GROWING SAMPLE GROUPS FROM THE MINIMUM GROUP SIZE
+
+If you have supplied a --min-group-size that is less than the number of samples defined in the group, you can allow sample groups to grow using the --grow parameter.  This allows you to identify groups of different (i.e. non-replicate) samples that share a difference with the comparison group.  Growing groups behaves differently depending on whether --genotype or --nogenotype is supplied.
+
+If --nogenotype is supplied, grow groups is done using the --separation-gap threshold.  It uses the difference in the obervation ratio of 1 group and its inverse observation ratio in the comparison group.  For example, if you supply `--grow --nogenotype --separation-gap 0.5`, samples will be greedily* added to the 2 groups in order of their difference with the current group's observation ratio average and stops just before the difference in the averages crosses the threshold of 0.5.
+
+If --genotype is supplied, all members of a sample group matching a genotype call in the sample group of size --min-group-size are added to the group.  If sample groups are being created dynamically and the groups have genotype calls in common, no other samples of the common genotype call will be added.
+
+\* Sample groups are seeded with members from either the bottom or top set of observation ratios.  Samples in different groups are seeded from opposite ends (top or bottom).  Samples are then traversed top-down or bottom-up and greedily added to the respective sample group in order of ascending difference from the current group average.
+
+FILTERING
+
+There are 2 threshold options that can be used to filter variants that do not contain differences between the sample groups that meet the thresholds.  In --genotype mode, the threshold is --min-group-size.  In --nogenotype mode the threshold is the combination of --separation-gap and --min-group-size.
+
+ n --nogenotype mode, if the difference between the observation ratios between (all of the*) pairs of sample groups is less than the separation gap threshold, the row will not be printed.
+
+In --genotype mode, if the (all of the*) pairs of sample groups share a common genotypoe call, the row will not be printed.
+
+\* In either case, if any pair of sample groups meets the threshold(s), the row will be printed regardless of whether or not any other pair fails the threshold(s).
+
+ EXAMPLE
+
+To sort based on the difference between specific samples or groups of samples, those groups can be defined on the command line using -s.  You can specify a minimum number of samples in the groups to differ.  So for example, say you have 3 wildtype (WT) replicates and you would like to see differences that all 3 WT samples have with any one of a set of 10 mutant samples.  You would do that on the command line using the sample names:
+
+ -s "wt1 wt2 wt3" -d 3   -s "m1 m2 m3 m4 m5 m6 m7 m8 m9 m10" -d 1
+
+The largest difference that the average observation ratio of the WT samples has with 1 of the mutant samples will be at the top of the results.
+        ]]>
+    </help>
+
+    <citations>
+        <citation type="doi">10.5072/zenodo.245784</citation>
+    </citations>
+
+</tool>

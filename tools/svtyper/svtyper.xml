@@ -1,0 +1,254 @@
+<tool id="svtyper"
+      name="svtyper"
+      version="0.1.0">
+
+    <description>Compute variant genotypes</description>
+
+    <requirements>
+        <requirement type="package" version="0.6.1">svtyper</requirement>
+        <requirement type="package" version="1.9">samtools</requirement>
+    </requirements>
+
+    <version_command>
+        svtyper -h | grep version | cut -d 'v' -f 3
+    </version_command>
+
+    <command detect_errors="aggressive">
+      <![CDATA[
+          #set refln = "ref.fasta"
+          #if $ref
+              samtools faidx '$ref' &&
+              ln -s -f '$ref' '$refln' &&
+              ln -s -f '${ref}.fai' '${refln}.fai' &&
+          #end if
+
+          #set agnostic_files = []
+          #for $i, $aln in enumerate( $alignment_files ):
+              #if $aln
+                  #if $aln.is_of_type("bam"):
+                      ln -s -f '${aln}' '${i}.bam' &&
+                      ln -s -f '${aln.metadata.bam_index}' '${i}.bam.bai' &&
+                      $agnostic_files.append(str($i) + ".bam")
+                  #else:
+                      ln -s -f '${aln}' '${i}.cram' &&
+                      ln -s -f '${aln.metadata.cram_index}' '${i}.cram.crai' &&
+                      $agnostic_files.append(str($i) + ".cram")
+                  #end if
+              #end if
+          #end for
+
+          svtyper
+          -i '$vcf'
+          -B ${",".join(map(str, $agnostic_files))}
+          -o '$vcfout'
+
+          #if $ref
+              -T $refln
+          #end if
+
+          #if $libin
+              -l $libin
+          #elif $outputlib
+              -l $libout
+          #end if
+
+          -m '$minaln'
+          -n '$samplesize'
+
+          #if int($maxreads) > 0
+              --max_reads '$maxreads'
+          #end if
+
+          --split_weight '$splitweight'
+          --disc_weight '$discweight'
+
+          #if $outputbam
+              -w '$bamout'
+          #end if
+
+          > '$vcfout'
+      ]]>
+    </command>
+
+    <inputs>
+        <param name="vcf"
+               label="vcf file"
+               argument="--input_vcf"
+
+               type="data"
+               format="vcf"
+
+               help="VCF input (default: stdin)"/>
+
+        <param name="alignment_files"
+               label="bam/cram file"
+               argument="--bam"
+
+               type="data"
+               format="bam,cram"
+               multiple="true"
+
+               help="BAM or CRAM file(s), comma-separated if genotyping multiple samples" />
+
+        <param name="ref"
+               label="Reference"
+               argument="--ref_fasta"
+
+               type="data"
+               format="fasta"
+               optional="true"
+
+               help="Indexed reference FASTA file (recommended for reading CRAM files)" />
+
+        <param name="libin"
+               label="Library json file"
+               argument="--lib_info"
+               optional="true"
+
+               type="data"
+               format="json"
+
+               help="read JSON file of library information" />
+
+        <param name="minaln"
+               label="Min aligned bases"
+               argument="--min_aligned"
+
+               type="integer"
+               value="20"
+
+               help="minimum number of aligned bases to consider read as evidence [20]" />
+
+        <param name="samplesize"
+               label="Sampling size for insert size determination"
+               argument="-n"
+
+               type="integer"
+               value="1000000"
+
+               help="number of reads to sample from BAM file for building insert size distribution [1000000]" />
+
+        <param name="sumquals"
+               label="Add genotyping quality"
+               argument="--sum_quals"
+
+               type="boolean"
+               truevalue="-q"
+               falsevalue=""
+               checked="no"
+               value="false"
+
+               help="add genotyping quality to existing QUAL (default: overwrite QUAL field)" />
+
+        <param name="maxreads"
+               label="Max reads to consider per variant"
+               argument="--max_reads"
+
+               type="integer"
+               value="0"
+
+               help="maximum number of reads to assess at any variant (reduces processing time in high-depth regions, default: 0 = unlimited)" />
+
+        <param name="splitweight"
+               label="Split read weight"
+               argument="--split_weight"
+
+               type="float"
+               value="1"
+
+               help="weight for split reads [1]" />
+
+        <param name="discweight"
+               label="Discordant read weight"
+               argument="--disc_weight"
+
+               type="float"
+               value="1"
+
+               help="weight for discordant paired-end reads [1]" />
+
+        <param name="outputlib"
+               label="Create an output library json file"
+
+               type="boolean"
+               checked="no"
+
+               help="if an input library json file (--lib_info) is not provided, create an output library json file" />
+
+        <param name="outputbam"
+               label="Create an output bam file"
+
+               type="boolean"
+               checked="no"
+
+               help="generate an output bam file containing the reads supporting the structural variants" />
+    </inputs>
+
+    <outputs>
+        <data format="vcf" name="vcfout" />
+        <data format="json" name="libout">
+            <filter>outputlib</filter>
+        </data>
+        <data format="bam" name="bamout">
+            <filter>outputbam</filter>
+        </data>
+    </outputs>
+
+    <tests>
+        <test>
+            <param name="vcf" value="test1.vcf"/>
+            <param name="alignment_files" value="test1.bam"/>
+            <param name="libin" value="test1.bam.json"/>
+            <output name="vcfout" file="test1.out.vcf"
+                    compare="diff" lines_diff="2" />
+        </test>
+        <test>
+            <!-- Test no input json lib file -->
+            <param name="vcf" value="test1.vcf"/>
+            <param name="alignment_files" value="test1.bam"/>
+            <output name="vcfout" file="test2.out.vcf"
+                    compare="diff" lines_diff="2" />
+        </test>
+    </tests>
+    <help>
+        <![CDATA[
+
+            usage: svtyper [-h] [-i FILE] [-o FILE] -B FILE [-T FILE] [-l FILE] [-m INT]
+                           [-n INT] [-q] [--max_reads INT] [--split_weight FLOAT]
+                           [--disc_weight FLOAT] [-w FILE] [--verbose]
+
+            svtyper
+            author: Colby Chiang (colbychiang@wustl.edu)
+            version: v0.6.0
+            description: Compute genotype of structural variants based on breakpoint depth
+
+            optional arguments:
+              -h, --help            show this help message and exit
+              -i FILE, --input_vcf FILE
+                                    VCF input (default: stdin)
+              -o FILE, --output_vcf FILE
+                                    output VCF to write (default: stdout)
+              -B FILE, --bam FILE   BAM or CRAM file(s), comma-separated if genotyping multiple samples
+              -T FILE, --ref_fasta FILE
+                                    Indexed reference FASTA file (recommended for reading CRAM files)
+              -l FILE, --lib_info FILE
+                                    create/read JSON file of library information
+              -m INT, --min_aligned INT
+                                    minimum number of aligned bases to consider read as evidence [20]
+              -n INT                number of reads to sample from BAM file for building insert size distribution [1000000]
+              -q, --sum_quals       add genotyping quality to existing QUAL (default: overwrite QUAL field)
+              --max_reads INT       maximum number of reads to assess at any variant (reduces processing time in high-depth regions, default: unlimited)
+              --split_weight FLOAT  weight for split reads [1]
+              --disc_weight FLOAT   weight for discordant paired-end reads [1]
+              -w FILE, --write_alignment FILE
+                                    write relevant reads to BAM file
+              --verbose             Report status updates
+
+        ]]>
+    </help>
+
+    <citations>
+        <citation type="doi">10.1038/nmeth.3505</citation>
+    </citations>
+
+  </tool>

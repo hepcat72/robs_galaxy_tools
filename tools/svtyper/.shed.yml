@@ -1,0 +1,9 @@
+name: svtyper
+owner: hepcat72
+description: Compute variant genotypes
+homepage_url: https://github.com/hall-lab/svtyper
+remote_repository_url: 
+long_description: Compute genotype of structural variants based on breakpoint depth
+remote_repository_url:
+type: unrestricted
+categories: [Variant Analysis]

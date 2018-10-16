@@ -1,18 +1,18 @@
-<tool id="lumpyexpress_0_1" name="lumpyexpress" version="0.1.0">
+<tool id="lumpyexpress_0_1" name="lumpyexpress" version="0.1.1">
     <description>Single or paired end SV detection</description>
 
     <requirements>
         <requirement type="package" version="2.7">python</requirement>
         <requirement type="package" version="0.8.3">pysam</requirement>
         <requirement type="package" version="1.13.1">numpy</requirement>
-        <requirement type="package" version="0.2.14a">lumpy-sv</requirement>
+        <requirement type="package" version="0.2.13">lumpy-sv</requirement>
         <requirement type="package" version="1.9">samtools</requirement>
         <requirement type="package" version="0.1.24">samblaster</requirement>
         <requirement type="package" version="0.6.5">sambamba</requirement>
         <requirement type="package" version="4.2.1">gawk</requirement>
     </requirements>
 
-    <version_command>___COMMAND___ ___VERSION_FLAG___</version_command>
+    <version_command>lumpy --version</version_command>
 
     <command detect_errors="aggressive">
         <![CDATA[
@@ -64,6 +64,8 @@
             Paired-end data is processed with lumpyexpress using only the required arguments.  Single-end data is processed with lumpy using `-mw 4 -tt 0 -sr id:<SAMPLE>,bam_file:<SAMPLE>.splitters.bam,back_distance:10,weight:1,min_mapping_threshold:20`.  Submit an issue to the tool wrapper repo if you would like more options to be available: https://github.com/hepcat72/robs_galaxy_tools
 
             Split reads and discordant reads are extracted from the supplied bam files.  Each bam file should represent a different sample.
+
+            This is a wrapper for lumpyexpress that comes with lumpy-sv version 0.2.13.  The script in the latest version of lumpy-sv (0.2.14a) has some issues when run on galaxy.
         ]]>
     </help>
 

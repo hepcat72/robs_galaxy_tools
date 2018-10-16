@@ -1,4 +1,3 @@
 tools/OLD
 tools/.DS_Store
-tools/vcfsamplecompare/tool_test_output.*
-tools/svtyper/tool_test_output.*
+*/*/tool_test_output.*

@@ -1,0 +1,8 @@
+name: lumpyexpress
+owner: hepcat72
+description: Structural Variant detection
+homepage_url: https://github.com/arq5x/lumpy-sv
+remote_repository_url: https://github.com/hepcat72/robs_galaxy_tools/tree/master/tools/lumpyexpress
+type: unrestricted
+categories:
+- Variant Analysis

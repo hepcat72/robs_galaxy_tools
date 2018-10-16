@@ -1,11 +1,11 @@
 <tool id="vcfsamplecompare"
       name="vcfsamplecompare"
-      version="0.1.0">
+      version="0.1.2">
 
     <description>sort/filter variants that differ between sample groups</description>
 
     <requirements>
-        <requirement type="package" version="v2.006">vcfsamplecompare</requirement>
+        <requirement type="package" version="v2.008">vcfsamplecompare</requirement>
     </requirements>
 
     <version_command>vcfSampleCompare.pl --version</version_command>
@@ -230,7 +230,7 @@ The largest difference that the average observation ratio of the WT samples has 
     </help>
 
     <citations>
-        <citation type="doi">10.5072/zenodo.245784</citation>
+        <citation type="doi">10.5281/zenodo.1463080</citation>
     </citations>
 
 </tool>

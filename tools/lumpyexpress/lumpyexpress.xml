@@ -12,7 +12,7 @@
         <requirement type="package" version="4.2.1">gawk</requirement>
     </requirements>
 
-    <version_command>lumpy --version</version_command>
+    <version_command>lumpy 2>&1 >/dev/null | grep Program | cut -d ' ' -f 4 | cut -d ')' -f 1</version_command>
 
     <command detect_errors="aggressive">
         <![CDATA[

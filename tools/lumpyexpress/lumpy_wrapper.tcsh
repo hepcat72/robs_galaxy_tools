@@ -21,7 +21,8 @@ setenv DSCDS ''
 setenv SPLTOPTS ''
 
 ##
-## The following is a work-around to a condition that causes a segfault in lumpy from lumpyexpress due to a new min_element threshold
+## The following is a work-around to a condition that causes a segfault in lumpy from lumpyexpress due to a new min_element threshold.
+## This is a kluge, but hopefully the segfault issue with lumpyexpress will be fixed soon.
 ##
 
 setenv LUMPYEXPRESSSCPT lumpyexpress
@@ -29,7 +30,7 @@ setenv LUMPYEXPRESSLOC  `which lumpyexpress`
 setenv LUMPYDIR         `dirname $LUMPYEXPRESSLOC`
 setenv LUMPYCONFIG      lumpyexpress.config
 setenv DISTROSCPT       pairend_distro.py
-setenv DISTROLOC        `which $DISTROSCPT`
+setenv DISTROLOC        `which $LUMPYDIR/../*/*/*/$DISTROSCPT`
 perl -e 'while(<STDIN>){s/min_elements = 10+/min_elements = 1/;print}' < $DISTROLOC > ./$DISTROSCPT
 perl -e 'while(<STDIN>){s/PAIREND_DISTRO=.*/PAIREND_DISTRO=$ARGV[0]/;print}' ./$DISTROSCPT < $LUMPYDIR/$LUMPYCONFIG > ./$LUMPYCONFIG
 perl -e 'while(<STDIN>){s/PAIREND_DISTRO=.*/PAIREND_DISTRO=$ARGV[0]/;print}' ./$DISTROSCPT < $LUMPYEXPRESSLOC > ./$LUMPYEXPRESSSCPT

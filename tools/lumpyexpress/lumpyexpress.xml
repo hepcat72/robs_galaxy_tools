@@ -1,11 +1,11 @@
-<tool id="lumpyexpress_0_1" name="lumpyexpress" version="0.1.2">
+<tool id="lumpyexpress_0_1" name="lumpyexpress" version="0.1.3">
     <description>Single or paired end SV detection</description>
 
     <requirements>
         <requirement type="package" version="2.7">python</requirement>
         <requirement type="package" version="0.8.3">pysam</requirement>
         <requirement type="package" version="1.13.1">numpy</requirement>
-        <requirement type="package" version="0.2.13">lumpy-sv</requirement>
+        <requirement type="package" version="0.2.14a">lumpy-sv</requirement>
         <requirement type="package" version="1.9">samtools</requirement>
         <requirement type="package" version="0.1.24">samblaster</requirement>
         <requirement type="package" version="0.6.5">sambamba</requirement>

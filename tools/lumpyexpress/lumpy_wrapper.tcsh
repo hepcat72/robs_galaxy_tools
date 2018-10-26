@@ -32,10 +32,8 @@ setenv LUMPYCONFIG      lumpyexpress.config
 setenv DISTROSCPT       pairend_distro.py
 setenv DISTROLOC        `which $LUMPYDIR/../*/*/*/$DISTROSCPT`
 perl -e 'while(<STDIN>){s/min_elements = 10+/min_elements = 1/;print}' < $DISTROLOC > ./$DISTROSCPT
-perl -e 'while(<STDIN>){s/PAIREND_DISTRO=.*/PAIREND_DISTRO=$ARGV[0]/;print}' ./$DISTROSCPT < $LUMPYDIR/$LUMPYCONFIG > ./$LUMPYCONFIG
-perl -e 'while(<STDIN>){s/PAIREND_DISTRO=.*/PAIREND_DISTRO=$ARGV[0]/;print}' ./$DISTROSCPT < $LUMPYEXPRESSLOC > ./$LUMPYEXPRESSSCPT
+perl -e 'while(<STDIN>){s/PAIREND_DISTRO=.*/PAIREND_DISTRO=$ARGV[0]/;print}' `pwd`/$DISTROSCPT < $LUMPYDIR/$LUMPYCONFIG > ./$LUMPYCONFIG
 chmod 555 ./$DISTROSCPT
-chmod 555 ./$LUMPYEXPRESSSCPT
 
 foreach b ( $MYARGV )
 
@@ -139,8 +137,8 @@ end
 if ( $PAIREDENDRUN ) then
 
   echo
-  echo "Running: ./$LUMPYEXPRESSSCPT -B $BAMS -S $SPLTS -D $DSCDS -o $OUTVCF"
-  ./$LUMPYEXPRESSSCPT -B $BAMS -S $SPLTS -D $DSCDS -o $OUTVCF
+  echo "Running: $LUMPYEXPRESSSCPT -K `pwd`/$LUMPYCONFIG -B $BAMS -S $SPLTS -D $DSCDS -o $OUTVCF"
+  $LUMPYEXPRESSSCPT -K `pwd`/$LUMPYCONFIG -B $BAMS -S $SPLTS -D $DSCDS -o $OUTVCF
 
   if ( $status ) then
     echo "lumpyexpress failed"

@@ -20,21 +20,6 @@ setenv SPLTS ''
 setenv DSCDS ''
 setenv SPLTOPTS ''
 
-##
-## The following is a work-around to a condition that causes a segfault in lumpy from lumpyexpress due to a new min_element threshold.
-## This is a kluge, but hopefully the segfault issue with lumpyexpress will be fixed soon.
-##
-
-setenv LUMPYEXPRESSSCPT lumpyexpress
-setenv LUMPYEXPRESSLOC  `which lumpyexpress`
-setenv LUMPYDIR         `dirname $LUMPYEXPRESSLOC`
-setenv LUMPYCONFIG      lumpyexpress.config
-setenv DISTROSCPT       pairend_distro.py
-setenv DISTROLOC        `which $LUMPYDIR/../*/*/*/$DISTROSCPT`
-perl -e 'while(<STDIN>){s/min_elements = 10+/min_elements = 1/;print}' < $DISTROLOC > ./$DISTROSCPT
-perl -e 'while(<STDIN>){s/PAIREND_DISTRO=.*/PAIREND_DISTRO=$ARGV[0]/;print}' `pwd`/$DISTROSCPT < $LUMPYDIR/$LUMPYCONFIG > ./$LUMPYCONFIG
-chmod 555 ./$DISTROSCPT
-
 foreach b ( $MYARGV )
 
   echo
@@ -137,8 +122,8 @@ end
 if ( $PAIREDENDRUN ) then
 
   echo
-  echo "Running: $LUMPYEXPRESSSCPT -K `pwd`/$LUMPYCONFIG -B $BAMS -S $SPLTS -D $DSCDS -o $OUTVCF"
-  $LUMPYEXPRESSSCPT -K `pwd`/$LUMPYCONFIG -B $BAMS -S $SPLTS -D $DSCDS -o $OUTVCF
+  echo "Running: lumpyexpress -B $BAMS -S $SPLTS -D $DSCDS -o $OUTVCF"
+  lumpyexpress -B $BAMS -S $SPLTS -D $DSCDS -o $OUTVCF
 
   if ( $status ) then
     echo "lumpyexpress failed"

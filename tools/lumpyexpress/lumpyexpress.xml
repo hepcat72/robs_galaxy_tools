@@ -1,4 +1,4 @@
-<tool id="lumpyexpress_0_1" name="lumpyexpress" version="0.1.8">
+<tool id="lumpyexpress_0_1" name="lumpyexpress" version="0.1.9">
     <description>Single or paired end SV detection</description>
 
     <requirements>

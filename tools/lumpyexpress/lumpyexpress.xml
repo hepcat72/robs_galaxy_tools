@@ -1,4 +1,4 @@
-<tool id="lumpyexpress_0_1" name="lumpyexpress" version="0.1.7">
+<tool id="lumpyexpress_0_1" name="lumpyexpress" version="0.1.8">
     <description>Single or paired end SV detection</description>
 
     <requirements>
@@ -7,7 +7,7 @@
         <requirement type="package" version="1.13.1">numpy</requirement>
         <requirement type="package" version="0.2.13">lumpy-sv</requirement>
         <requirement type="package" version="1.9">samtools</requirement>
-        <!-- No conda package for MacOS, but I have it installed on my mac <requirement type="package" version="0.1.24">samblaster</requirement> -->
+        <requirement type="package" version="0.1.24">samblaster</requirement>
         <requirement type="package" version="0.6.5">sambamba</requirement>
         <requirement type="package" version="4.2.1">gawk</requirement>
     </requirements>

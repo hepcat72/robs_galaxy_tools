@@ -5,7 +5,7 @@
     <description>sort/filter variants that differ between sample groups</description>
 
     <requirements>
-        <requirement type="package" version="v2.008">vcfsamplecompare</requirement>
+        <requirement type="package" version="v2.013">vcfsamplecompare</requirement>
     </requirements>
 
     <version_command>vcfSampleCompare.pl --version</version_command>

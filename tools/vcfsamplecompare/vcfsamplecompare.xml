@@ -1,11 +1,11 @@
 <tool id="vcfsamplecompare"
       name="vcfsamplecompare"
-      version="0.1.2">
+      version="2.013+galaxy2">
 
     <description>sort/filter variants that differ between sample groups</description>
 
     <requirements>
-        <requirement type="package" version="v2.013">vcfsamplecompare</requirement>
+        <requirement type="package" version="2.013">vcfsamplecompare</requirement>
     </requirements>
 
     <version_command>vcfSampleCompare.pl --version</version_command>
